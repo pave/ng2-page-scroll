@@ -121,7 +121,7 @@ Temporary Items
 .apdisk
 
 ### ng2-scroll-spy specific
-*.js
+# *.js
 !make.js
 *.map
 *.d.ts
