@@ -28,7 +28,7 @@ export class PageScroll implements OnDestroy {
 
     private document:Document;
     private body:HTMLBodyElement;
-    private listener:EventListenerOrEventListenerObject = (evt:Event):void => {
+    private listener:EventListenerOrEventListenerObject = (event:Event):void => {
         // Stop the scroll animation if the user interferes with it
         if (event.type !== 'keyup' || PageScroll.interfereKeys.indexOf((<KeyboardEvent>event).keyCode) >= 0) {
             PageScroll.stopTimers();
@@ -79,7 +79,8 @@ export class PageScroll implements OnDestroy {
 
         if (anchorTarget !== null) {
             let targetScrollTop:number = anchorTarget.offsetTop;
-            let distanceToScroll:number = targetScrollTop - this.body.scrollTop;
+            let startScrollTop:number = (this.document.documentElement.scrollTop || this.body.scrollTop);
+            let distanceToScroll:number = targetScrollTop - startScrollTop;
 
             if (distanceToScroll !== 0) {
                 PageScroll.stopTimers();
@@ -87,7 +88,7 @@ export class PageScroll implements OnDestroy {
                 let startTime:number = new Date().getTime();
 
                 let intervalConf:any = {
-                    startScrollTop: this.body.scrollTop,
+                    startScrollTop: startScrollTop,
                     targetScrollTop: distanceToScroll -
                     (this.pageScrollOffset === null ? PageScrollConfig.defaultScrollOffset : this.pageScrollOffset),
                     startTime: startTime,
@@ -98,11 +99,14 @@ export class PageScroll implements OnDestroy {
 
                 let timer:any = setInterval((intervalConf:any) => {
                     let currentTime:number = new Date().getTime();
-                    this.body.scrollTop = intervalConf.easing(
+                    let newScrollTop:number = intervalConf.easing(
                         currentTime - intervalConf.startTime,
                         intervalConf.startScrollTop,
                         intervalConf.targetScrollTop,
                         intervalConf.duration);
+
+                    this.body.scrollTop = newScrollTop;
+                    this.document.documentElement.scrollTop = newScrollTop
 
                     if (intervalConf.endTime <= currentTime) {
                         PageScroll.stopTimer(timer);
